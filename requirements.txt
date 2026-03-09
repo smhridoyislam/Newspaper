@@ -1,0 +1,21 @@
+# Django
+Django>=6.0,<7.0
+
+# Database
+# For PostgreSQL (production)
+psycopg2-binary>=2.9.9
+
+# Static files
+whitenoise>=6.6.0
+
+# Image handling
+Pillow>=10.2.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Production server
+gunicorn>=21.2.0
+
+# For deployment
+dj-database-url>=2.1.0

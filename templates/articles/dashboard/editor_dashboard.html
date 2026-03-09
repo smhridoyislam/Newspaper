@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Editor Dashboard - Newspaper Site{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-speedometer2"></i> Editor Dashboard</h2>
+            <p class="text-muted mb-0">Welcome back, {{ user.username }}!</p>
+        </div>
+        <a href="{% url 'articles:article_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> New Article
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-file-text text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Articles</h6>
+                            <h2 class="mb-0">{{ total_articles }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Published</h6>
+                            <h2 class="mb-0">{{ published_articles }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-pencil text-warning" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Drafts</h6>
+                            <h2 class="mb-0">{{ draft_articles }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'articles:article_create' %}" class="btn btn-outline-primary me-2 mb-2">
+                        <i class="bi bi-plus-lg"></i> Create Article
+                    </a>
+                    <a href="{% url 'articles:article_list' %}" class="btn btn-outline-secondary me-2 mb-2">
+                        <i class="bi bi-list"></i> View All Articles
+                    </a>
+                    {% if user.is_superuser %}
+                    <a href="{% url 'articles:category_manage' %}" class="btn btn-outline-info me-2 mb-2">
+                        <i class="bi bi-folder"></i> Manage Categories
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'admin:index' %}" class="btn btn-outline-dark mb-2">
+                        <i class="bi bi-gear"></i> Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Articles -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Articles</h5>
+            <a href="{% url 'articles:article_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Headline</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Rating</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for article in recent_articles %}
+                        <tr>
+                            <td>
+                                <a href="{{ article.get_absolute_url }}" class="text-dark text-decoration-none">
+                                    {{ article.headline|truncatewords:8 }}
+                                </a>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ article.category.name }}</span></td>
+                            <td>
+                                {% if article.status == 'published' %}
+                                <span class="badge bg-success">Published</span>
+                                {% elif article.status == 'draft' %}
+                                <span class="badge bg-warning text-dark">Draft</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Archived</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <i class="bi bi-star-fill text-warning"></i> {{ article.get_average_rating }}/4
+                            </td>
+                            <td>{{ article.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'articles:article_edit' article.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'articles:article_delete' article.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">No articles yet. Create your first article!</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

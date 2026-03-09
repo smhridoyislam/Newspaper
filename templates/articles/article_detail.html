@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.headline }} - Newspaper Site{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Main Article Content -->
+        <div class="col-lg-8">
+            <article class="article-detail">
+                <!-- Article Header -->
+                <header class="article-header mb-4">
+                    <div class="mb-3">
+                        <a href="{% url 'articles:category' article.category.slug %}" class="badge bg-primary text-decoration-none">
+                            {{ article.category.name }}
+                        </a>
+                        {% if article.is_breaking %}
+                        <span class="badge bg-danger">Breaking News</span>
+                        {% endif %}
+                        {% if article.is_featured %}
+                        <span class="badge bg-warning text-dark">Featured</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="display-5 fw-bold">{{ article.headline }}</h1>
+                    
+                    <div class="article-meta d-flex flex-wrap align-items-center text-muted mb-4">
+                        <span class="me-3">
+                            <i class="bi bi-person"></i> By <strong>{{ article.author.username }}</strong>
+                        </span>
+                        <span class="me-3">
+                            <i class="bi bi-calendar"></i> {{ article.publishing_time|date:"F d, Y, H:i" }}
+                        </span>
+                        <span class="me-3">
+                            <i class="bi bi-eye"></i> {{ article.views_count }} views
+                        </span>
+                        <span>
+                            <i class="bi bi-star-fill text-warning"></i> 
+                            {{ article.get_average_rating }}/4 ({{ article.get_rating_count }} ratings)
+                        </span>
+                    </div>
+                </header>
+
+                <!-- Featured Image -->
+                {% if article.featured_image %}
+                <figure class="article-image mb-4">
+                    <img src="{{ article.featured_image.url }}" class="img-fluid rounded shadow" alt="{{ article.headline }}">
+                    {% if article.image_caption %}
+                    <figcaption class="text-muted text-center mt-2 small">{{ article.image_caption }}</figcaption>
+                    {% endif %}
+                </figure>
+                {% endif %}
+
+                <!-- Article Body -->
+                <div class="article-body">
+                    {{ article.body|linebreaks }}
+                </div>
+
+                <!-- Social Share -->
+                <div class="social-share my-4 py-3 border-top border-bottom">
+                    <span class="text-muted me-3">Share this article:</span>
+                    <a href="https://twitter.com/intent/tweet?text={{ article.headline }}&url={{ request.build_absolute_uri }}" 
+                       target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="bi bi-twitter"></i> Twitter
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                       target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="bi bi-facebook"></i> Facebook
+                    </a>
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ article.headline }}" 
+                       target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-linkedin"></i> LinkedIn
+                    </a>
+                </div>
+
+                <!-- Rating Section -->
+                <div class="rating-section card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-star"></i> Rate This Article</h5>
+                        
+                        <div class="current-rating mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rating-stars me-3">
+                                    {% for i in "01234" %}
+                                        {% if forloop.counter0 < article.get_average_rating %}
+                                        <i class="bi bi-star-fill text-warning fs-4"></i>
+                                        {% else %}
+                                        <i class="bi bi-star text-warning fs-4"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <span class="text-muted">
+                                    {{ article.get_average_rating }}/4 based on {{ article.get_rating_count }} rating(s)
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if user.is_authenticated %}
+                            {% if user_rating %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-check-circle"></i> You rated this article: <strong>{{ user_rating.rating }}/4</strong>
+                                {% if user_rating.comment %}
+                                <br><small>Your comment: "{{ user_rating.comment }}"</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'articles:rate_article' article.slug %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Your Rating:</label>
+                                    <div class="rating-options">
+                                        {% for value, label in rating_form.fields.rating.choices %}
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="rating" 
+                                                   id="rating{{ value }}" value="{{ value }}"
+                                                   {% if user_rating and user_rating.rating == value %}checked{% endif %}>
+                                            <label class="form-check-label" for="rating{{ value }}">
+                                                {{ value }} {% if value == 0 %}(Poor){% elif value == 4 %}(Excellent){% endif %}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Comment (optional):</label>
+                                    <textarea class="form-control" name="comment" id="comment" rows="2" 
+                                              placeholder="Share your thoughts...">{% if user_rating %}{{ user_rating.comment }}{% endif %}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    {% if user_rating %}Update Rating{% else %}Submit Rating{% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-info-circle"></i> 
+                                <a href="{% url 'accounts:login' %}">Login</a> to rate this article.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Related Articles -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-newspaper"></i> Related in {{ article.category.name }}</h5>
+                </div>
+                <div class="card-body">
+                    {% for related in related_articles %}
+                    <div class="related-article {% if not forloop.last %}mb-3 pb-3 border-bottom{% endif %}">
+                        <div class="d-flex">
+                            {% if related.featured_image %}
+                            <img src="{{ related.featured_image.url }}" class="rounded me-3" 
+                                 alt="{{ related.headline }}" style="width: 80px; height: 60px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 60px;">
+                                <i class="bi bi-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{{ related.get_absolute_url }}" class="text-dark text-decoration-none">
+                                        {{ related.headline|truncatewords:10 }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-star-fill text-warning"></i> {{ related.get_average_rating }}/4
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center mb-0">No related articles found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Premium Subscription Placeholder -->
+            <div class="card border-0 shadow-sm bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white text-center py-4">
+                    <i class="bi bi-gem fs-1 mb-3"></i>
+                    <h5>Go Premium</h5>
+                    <p class="small">Unlock exclusive content and features with our premium subscription.</p>
+                    <button class="btn btn-light" disabled>
+                        <i class="bi bi-lock"></i> Coming Soon
+                    </button>
+                    <p class="small mt-2 mb-0 opacity-75">Premium features arriving soon!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

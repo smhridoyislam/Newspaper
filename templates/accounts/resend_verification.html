@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Resend Verification - Newspaper Site{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-envelope-check text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="mt-2">Resend Verification</h2>
+                        <p class="text-muted">Enter your email to receive a new verification link</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   required placeholder="Enter your email address">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-envelope"></i> Resend Verification Email
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-0">
+                            <a href="{% url 'accounts:login' %}">Back to Login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

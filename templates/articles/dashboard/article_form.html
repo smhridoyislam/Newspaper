@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Article - Newspaper Site{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-4">
+        <h2><i class="bi bi-{% if action == 'Create' %}plus-lg{% else %}pencil{% endif %}"></i> {{ action }} Article</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'articles:editor_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'articles:article_list' %}">Articles</a></li>
+                <li class="breadcrumb-item active">{{ action }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-file-text"></i> Article Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_headline" class="form-label">Headline *</label>
+                            {{ form.headline }}
+                            {% if form.headline.errors %}
+                            <div class="text-danger small">{{ form.headline.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_body" class="form-label">Article Body *</label>
+                            {{ form.body }}
+                            {% if form.body.errors %}
+                            <div class="text-danger small">{{ form.body.errors.0 }}</div>
+                            {% endif %}
+                            <small class="text-muted">Write the full content of your article here.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Image -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-image"></i> Featured Image</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if article and article.featured_image %}
+                        <div class="mb-3">
+                            <label class="form-label">Current Image:</label>
+                            <div>
+                                <img src="{{ article.featured_image.url }}" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="id_featured_image" class="form-label">{% if article and article.featured_image %}Change{% else %}Upload{% endif %} Image</label>
+                            {{ form.featured_image }}
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="id_image_caption" class="form-label">Image Caption</label>
+                            {{ form.image_caption }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publish Settings -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-gear"></i> Publish Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_status" class="form-label">Status</label>
+                            {{ form.status }}
+                            <small class="text-muted d-block mt-1">
+                                Select "Published" to make this article visible to readers.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_category" class="form-label">Category *</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger small">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-check mb-2">
+                            {{ form.is_featured }}
+                            <label class="form-check-label" for="id_is_featured">
+                                <i class="bi bi-star text-warning"></i> Featured Article
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            {{ form.is_breaking }}
+                            <label class="form-check-label" for="id_is_breaking">
+                                <i class="bi bi-lightning text-danger"></i> Breaking News
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-lg"></i> {% if action == 'Create' %}Create Article{% else %}Update Article{% endif %}
+                            </button>
+                            <a href="{% url 'articles:article_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i> Cancel
+                            </a>
+                        </div>
+                        
+                        {% if article %}
+                        <hr>
+                        <div class="text-muted small">
+                            <p class="mb-1"><strong>Created:</strong> {{ article.created_at|date:"M d, Y H:i" }}</p>
+                            <p class="mb-1"><strong>Updated:</strong> {{ article.updated_at|date:"M d, Y H:i" }}</p>
+                            {% if article.publishing_time %}
+                            <p class="mb-0"><strong>Published:</strong> {{ article.publishing_time|date:"M d, Y H:i" }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

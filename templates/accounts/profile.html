@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Newspaper Site{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-body text-center py-5">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" 
+                         style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 120px; height: 120px;">
+                        <i class="bi bi-person-fill text-white" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <h4 class="mb-1">{{ user.username }}</h4>
+                    <p class="text-muted mb-2">{{ user.email }}</p>
+                    
+                    <span class="badge {% if user.user_type == 'editor' %}bg-success{% else %}bg-info{% endif %}">
+                        {{ user.get_user_type_display }}
+                    </span>
+                    
+                    {% if user.is_premium %}
+                    <span class="badge bg-warning text-dark ms-1">
+                        <i class="bi bi-gem"></i> Premium
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="card border-0 shadow mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Your Activity</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Ratings Given
+                            <span class="badge bg-primary rounded-pill">{{ user.ratings.count }}</span>
+                        </li>
+                        {% if user.is_editor %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Articles Written
+                            <span class="badge bg-success rounded-pill">{{ user.articles.count }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_first_name" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_last_name" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Username</label>
+                            {{ form.username }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_bio" class="form-label">Bio</label>
+                            {{ form.bio }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_phone_number" class="form-label">Phone Number</label>
+                                {{ form.phone_number }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_date_of_birth" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_profile_picture" class="form-label">Profile Picture</label>
+                            {{ form.profile_picture }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Premium Subscription Placeholder -->
+            <div class="card border-0 shadow mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-gem"></i> Premium Subscription</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_premium %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle-fill"></i> You have an active premium subscription.
+                        {% if user.premium_expiry %}
+                        <br><small>Expires: {{ user.premium_expiry|date:"F d, Y" }}</small>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Upgrade to premium for exclusive features:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Ad-free experience</li>
+                        <li><i class="bi bi-check text-success"></i> Exclusive articles</li>
+                        <li><i class="bi bi-check text-success"></i> Early access to news</li>
+                        <li><i class="bi bi-check text-success"></i> Newsletter subscription</li>
+                    </ul>
+                    <button class="btn btn-warning" disabled>
+                        <i class="bi bi-lock"></i> Upgrade to Premium - Coming Soon
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
